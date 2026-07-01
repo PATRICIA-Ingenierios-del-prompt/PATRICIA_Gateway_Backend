@@ -1,0 +1,29 @@
+package ingprompt.patricia.gateway.config;
+
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RouteConfig {
+
+    @Bean
+    public RouteLocator routes(RouteLocatorBuilder builder, ServiceUris uris) {
+        return builder.routes()
+                // --- Auth MS: /auth/login is public, the rest still go through the gateway ---
+                .route("auth", r -> r.path("/auth/**").uri(uris.getAuth()))
+
+                // --- REST microservices ---
+                .route("parches", r -> r.path("/api/parches/**", "/api/invites/**").uri(uris.getParches()))
+                .route("events", r -> r.path("/api/events/**").uri(uris.getEvents()))
+                .route("location", r -> r.path("/api/locations/**").uri(uris.getLocation()))
+                .route("notifications", r -> r.path("/api/notifications/**").uri(uris.getNotification()))
+
+                // --- STOMP WebSocket tunnels (upgrade handshake carries the JWT) ---
+                .route("location-ws", r -> r.path("/ws/geo/**").uri(uris.getLocationWs()))
+                .route("notifications-ws", r -> r.path("/ws/notifications/**").uri(uris.getNotificationWs()))
+
+                .build();
+    }
+}
