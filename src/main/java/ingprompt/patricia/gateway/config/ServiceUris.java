@@ -10,9 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "gateway.services")
 public class ServiceUris {
-
-    // Values bind from gateway.services.* in application.yml (env var, else localhost
-    // fallback declared there). Kept as a single source of truth — no defaults here.
     private String auth;
     private String parches;
     private String events;
