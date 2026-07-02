@@ -11,12 +11,14 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "gateway.services")
 public class ServiceUris {
 
-    private String auth = "http://localhost:8081";
-    private String parches = "http://localhost:8083";
-    private String events = "http://localhost:8087";
-    private String location = "http://localhost:8089";
-    private String notification = "http://localhost:8091";
+    // Values bind from gateway.services.* in application.yml (env var, else localhost
+    // fallback declared there). Kept as a single source of truth — no defaults here.
+    private String auth;
+    private String parches;
+    private String events;
+    private String location;
+    private String notification;
 
-    private String locationWs = "ws://localhost:8089";
-    private String notificationWs = "ws://localhost:8091";
+    private String locationWs;
+    private String notificationWs;
 }

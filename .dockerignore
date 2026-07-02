@@ -1,0 +1,8 @@
+# Keep the build context lean — the multi-stage build only needs pom.xml + src.
+target/
+.git/
+.idea/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+.DS_Store
+*.log
