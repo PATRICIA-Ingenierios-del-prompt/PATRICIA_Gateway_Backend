@@ -1,0 +1,47 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # Ejemplo: peticiones a /auth/** van al Auth Backend.
+            # Esta ruta es pública (ver security.public-paths) porque ahí
+            # viven login/otp/refresh, que no requieren JWT.
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/auth/**
+
+            # User Backend: pasa primero por JwtAuthenticationFilter porque
+            # /api/v1/** NO está en security.public-paths. Solo llega con
+            # token válido, y el microservicio recibe X-User-Id / X-User-Email
+            # / X-User-Roles (y además valida el JWT de nuevo por su cuenta,
+            # como defensa en profundidad).
+            - id: user-service
+              uri: ${USER_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/usuarios/**,/api/v1/intereses/**
+
+            # NOTA: /internal/** de cada microservicio (protegido con
+            # X-Internal-Api-Key) NUNCA se expone en el Gateway: es tráfico
+            # exclusivamente service-to-service dentro de la red interna.
+
+            # Agrega aquí el resto de microservicios cuando existan.
+
+# Mismo secreto (HS256) que jwt.secret en el Auth Backend.
+jwt:
+  secret: ${JWT_SECRET}
+
+security:
+  public-paths:
+    - /auth/**
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /v3/api-docs/**
+    - /actuator/health
