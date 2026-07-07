@@ -1,6 +1,18 @@
 jwt:
   secret: test-secret-key-with-at-least-32-bytes!!
 
+# Requerido por ServiceUris (prefix: gateway.services) para que RouteConfig
+# construya el RouteLocator sin NPE en el contexto de test.
+gateway:
+  services:
+    auth: http://localhost:8081
+    parches: http://localhost:8083
+    events: http://localhost:8087
+    location: http://localhost:8089
+    notification: http://localhost:8091
+    location-ws: ws://localhost:8089
+    notification-ws: ws://localhost:8091
+
 security:
   public-paths:
     - /auth/**

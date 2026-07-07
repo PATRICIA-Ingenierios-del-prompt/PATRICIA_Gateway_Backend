@@ -136,7 +136,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 ? ""
                 : String.join(",", roles.stream().map(String::valueOf).toList());
 
-        ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+        ServerHttpRequest.Builder builder = exchange.getRequest().mutate()
                 .headers(headers -> {
                     headers.remove(HEADER_USER_ID);
                     headers.remove(HEADER_USER_EMAIL);
@@ -146,11 +146,13 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                         headers.set(HEADER_USER_EMAIL, email);
                     }
                     headers.set(HEADER_USER_ROLES, rolesHeader);
-                })
-                .uri(uri -> stripQueryToken ? stripAccessToken(uri) : uri)
-                .build();
+                });
 
-        return exchange.mutate().request(mutatedRequest).build();
+        if (stripQueryToken) {
+            builder.uri(stripAccessToken(exchange.getRequest().getURI()));
+        }
+
+        return exchange.mutate().request(builder.build()).build();
     }
 
     private boolean isPublicPath(String path) {
