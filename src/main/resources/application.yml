@@ -84,6 +84,20 @@ spring:
             # NUNCA se expone en el Gateway: es tráfico exclusivamente service-to-service
             # dentro de la red interna.
 
+# Downstream service URIs consumidos por ServiceUris (prefix: gateway.services),
+# usados por RouteConfig (RouteLocatorBuilder en Java). Env-overridable; los
+# nombres de variable coinciden con docker-compose.yml. Los defaults asumen que
+# los microservicios corren en el host local.
+gateway:
+  services:
+    auth: ${AUTH_SERVICE_URI:http://localhost:8081}
+    parches: ${PARCHES_SERVICE_URI:http://localhost:8083}
+    events: ${EVENTS_SERVICE_URI:http://localhost:8087}
+    location: ${LOCATION_SERVICE_URI:http://localhost:8089}
+    notification: ${NOTIFICATION_SERVICE_URI:http://localhost:8091}
+    location-ws: ${LOCATION_WS_URI:ws://localhost:8089}
+    notification-ws: ${NOTIFICATION_WS_URI:ws://localhost:8091}
+
 # Mismo secreto (HS256) que jwt.secret en el Auth Backend.
 jwt:
   secret: ${JWT_SECRET}

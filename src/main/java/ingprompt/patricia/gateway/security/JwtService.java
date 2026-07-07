@@ -1,5 +1,6 @@
 package ingprompt.patricia.gateway.security;
 
+import ingprompt.patricia.gateway.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
