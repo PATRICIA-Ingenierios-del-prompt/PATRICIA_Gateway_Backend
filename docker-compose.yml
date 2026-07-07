@@ -1,0 +1,32 @@
+services:
+  gateway:
+    build: .
+    image: patricia/gateway:latest
+    container_name: patricia-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      # REQUIRED: must be the SAME HS256 secret the Auth MS signs with (>= 32 bytes).
+      # Override via a .env file or your shell; the default only lets it boot for local dev.
+      JWT_SECRET: ${JWT_SECRET:-local-dev-shared-secret-change-me-min-32-bytes!!}
+
+      # Downstream services. Defaults assume the other MS run on the host machine;
+      # host.docker.internal lets this container reach them. Point these at real
+      # hostnames (compose service names / K8s Service DNS) in other environments.
+      AUTH_SERVICE_URI: ${AUTH_SERVICE_URI:-http://host.docker.internal:8081}
+      PARCHES_SERVICE_URI: ${PARCHES_SERVICE_URI:-http://host.docker.internal:8083}
+      EVENTS_SERVICE_URI: ${EVENTS_SERVICE_URI:-http://host.docker.internal:8087}
+      LOCATION_SERVICE_URI: ${LOCATION_SERVICE_URI:-http://host.docker.internal:8089}
+      NOTIFICATION_SERVICE_URI: ${NOTIFICATION_SERVICE_URI:-http://host.docker.internal:8091}
+      LOCATION_WS_URI: ${LOCATION_WS_URI:-ws://host.docker.internal:8089}
+      NOTIFICATION_WS_URI: ${NOTIFICATION_WS_URI:-ws://host.docker.internal:8091}
+    # Makes host.docker.internal resolvable on Linux (already works on Docker Desktop).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped

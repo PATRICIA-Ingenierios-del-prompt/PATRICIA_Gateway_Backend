@@ -4,40 +4,91 @@ server:
 spring:
   application:
     name: gateway
-
   cloud:
     gateway:
       server:
         webflux:
           routes:
-            # Ejemplo: peticiones a /auth/** van al Auth Backend.
-            # Esta ruta es pública (ver security.public-paths) porque ahí
-            # viven login/otp/refresh, que no requieren JWT.
+            # Auth Backend — pública (ver security.public-paths): login/otp/refresh no requieren JWT.
             - id: auth-service
               uri: ${AUTH_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/auth/**
 
-            # User Backend: pasa primero por JwtAuthenticationFilter porque
-            # /api/v1/** NO está en security.public-paths. Solo llega con
-            # token válido, y el microservicio recibe X-User-Id / X-User-Email
-            # / X-User-Roles (y además valida el JWT de nuevo por su cuenta,
-            # como defensa en profundidad).
+            # User Backend — pasa por JwtAuthenticationFilter (no está en public-paths).
             - id: user-service
               uri: ${USER_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/api/v1/usuarios/**,/api/v1/intereses/**
 
-            # NOTA: /internal/** de cada microservicio (protegido con
-            # X-Internal-Api-Key) NUNCA se expone en el Gateway: es tráfico
-            # exclusivamente service-to-service dentro de la red interna.
+            # Parches — HTTP + WebSocket
+            # AJUSTA el Path si tu controller usa otro prefijo.
+            - id: parches-service
+              uri: ${PARCHES_SERVICE_URI:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/parches/**
+            - id: parches-service-ws
+              uri: ${PARCHES_WS_URI:ws://localhost:8083}
+              predicates:
+                - Path=/ws/parches/**
 
-            # Agrega aquí el resto de microservicios cuando existan.
+            # Events — HTTP (sin WebSocket, según lo confirmado)
+            - id: events-service
+              uri: ${EVENTS_SERVICE_URI:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/eventos/**
+
+            # Location — HTTP + WebSocket
+            - id: location-service
+              uri: ${LOCATION_SERVICE_URI:http://localhost:8089}
+              predicates:
+                - Path=/api/v1/location/**
+            - id: location-service-ws
+              uri: ${LOCATION_WS_URI:ws://localhost:8089}
+              predicates:
+                - Path=/ws/location/**
+
+            # Notification — HTTP + WebSocket
+            - id: notification-service
+              uri: ${NOTIFICATION_SERVICE_URI:http://localhost:8091}
+              predicates:
+                - Path=/api/v1/notification/**
+            - id: notification-service-ws
+              uri: ${NOTIFICATION_WS_URI:ws://localhost:8091}
+              predicates:
+                - Path=/ws/notification/**
+
+            # Canvas — HTTP + WebSocket
+            # AJUSTA el puerto/Path: no se mencionó antes, uso valores provisionales.
+            - id: canvas-service
+              uri: ${CANVAS_SERVICE_URI:http://localhost:8093}
+              predicates:
+                - Path=/api/v1/canvas/**
+            - id: canvas-service-ws
+              uri: ${CANVAS_WS_URI:ws://localhost:8093}
+              predicates:
+                - Path=/ws/canvas/**
+
+            # Comunicación — HTTP + WebSocket
+            # AJUSTA el puerto/Path: no se mencionó antes, uso valores provisionales.
+            - id: comunicacion-service
+              uri: ${COMUNICACION_SERVICE_URI:http://localhost:8095}
+              predicates:
+                - Path=/api/v1/comunicacion/**
+            - id: comunicacion-service-ws
+              uri: ${COMUNICACION_WS_URI:ws://localhost:8095}
+              predicates:
+                - Path=/ws/comunicacion/**
+
+            # NOTA: /internal/** de cada microservicio (protegido con X-Internal-Api-Key)
+            # NUNCA se expone en el Gateway: es tráfico exclusivamente service-to-service
+            # dentro de la red interna.
 
 # Mismo secreto (HS256) que jwt.secret en el Auth Backend.
 jwt:
   secret: ${JWT_SECRET}
 
+# Consumido por GatewaySecurityProperties (usado en JwtAuthenticationFilter).
 security:
   public-paths:
     - /auth/**
@@ -45,3 +96,14 @@ security:
     - /swagger-ui.html
     - /v3/api-docs/**
     - /actuator/health
+    - /actuator/info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
