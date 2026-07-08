@@ -38,7 +38,7 @@ class JwtAuthenticationFilterTest {
         GatewaySecurityProperties securityProperties = new GatewaySecurityProperties();
         securityProperties.setPublicPaths(List.of("/auth/**"));
 
-        filter = new JwtAuthenticationFilter(jwtProperties, securityProperties);
+        filter = new JwtAuthenticationFilter(new JwtService(jwtProperties), securityProperties);
     }
 
     @Test

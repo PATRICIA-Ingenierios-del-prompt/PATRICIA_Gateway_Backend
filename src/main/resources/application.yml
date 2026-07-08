@@ -4,93 +4,11 @@ server:
 spring:
   application:
     name: gateway
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            # Auth Backend — pública (ver security.public-paths): login/otp/refresh no requieren JWT.
-            - id: auth-service
-              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
-              predicates:
-                - Path=/auth/**
 
-            # User Backend — pasa por JwtAuthenticationFilter (no está en public-paths).
-            - id: user-service
-              uri: ${USER_SERVICE_URL:http://localhost:8082}
-              predicates:
-                - Path=/api/v1/usuarios/**,/api/v1/intereses/**
-
-            # Parches — HTTP + WebSocket
-            # AJUSTA el Path si tu controller usa otro prefijo.
-            - id: parches-service
-              uri: ${PARCHES_SERVICE_URI:http://localhost:8083}
-              predicates:
-                - Path=/api/v1/parches/**
-            - id: parches-service-ws
-              uri: ${PARCHES_WS_URI:ws://localhost:8083}
-              predicates:
-                - Path=/ws/parches/**
-
-            # Events — HTTP (sin WebSocket, según lo confirmado)
-            - id: events-service
-              uri: ${EVENTS_SERVICE_URI:http://localhost:8087}
-              predicates:
-                - Path=/api/v1/eventos/**
-
-            # Location — HTTP + WebSocket
-            - id: location-service
-              uri: ${LOCATION_SERVICE_URI:http://localhost:8089}
-              predicates:
-                - Path=/api/v1/location/**
-            - id: location-service-ws
-              uri: ${LOCATION_WS_URI:ws://localhost:8089}
-              predicates:
-                - Path=/ws/location/**
-
-            # Notification — HTTP + WebSocket
-            - id: notification-service
-              uri: ${NOTIFICATION_SERVICE_URI:http://localhost:8091}
-              predicates:
-                - Path=/api/v1/notification/**
-            - id: notification-service-ws
-              uri: ${NOTIFICATION_WS_URI:ws://localhost:8091}
-              predicates:
-                - Path=/ws/notification/**
-
-            # Canvas — HTTP + WebSocket
-            # AJUSTA el puerto/Path: no se mencionó antes, uso valores provisionales.
-            - id: canvas-service
-              uri: ${CANVAS_SERVICE_URI:http://localhost:8093}
-              predicates:
-                - Path=/api/v1/canvas/**
-            - id: canvas-service-ws
-              uri: ${CANVAS_WS_URI:ws://localhost:8093}
-              predicates:
-                - Path=/ws/canvas/**
-
-            # Comunicación — HTTP + WebSocket
-            # AJUSTA el puerto/Path: no se mencionó antes, uso valores provisionales.
-            - id: comunicacion-service
-              uri: ${COMUNICACION_SERVICE_URI:http://localhost:8095}
-              predicates:
-                - Path=/api/v1/comunicacion/**
-            - id: comunicacion-service-ws
-              uri: ${COMUNICACION_WS_URI:ws://localhost:8095}
-              predicates:
-                - Path=/ws/comunicacion/**
-
-            # NOTA: /internal/** de cada microservicio (protegido con X-Internal-Api-Key)
-            # NUNCA se expone en el Gateway: es tráfico exclusivamente service-to-service
-            # dentro de la red interna.
-
-# Downstream service URIs consumidos por ServiceUris (prefix: gateway.services),
-# usados por RouteConfig (RouteLocatorBuilder en Java). Env-overridable; los
-# nombres de variable coinciden con docker-compose.yml. Los defaults asumen que
-# los microservicios corren en el host local.
 gateway:
   services:
     auth: ${AUTH_SERVICE_URI:http://localhost:8081}
+    users: ${USERS_SERVICE_URI:http://localhost:8082}
     parches: ${PARCHES_SERVICE_URI:http://localhost:8083}
     events: ${EVENTS_SERVICE_URI:http://localhost:8087}
     location: ${LOCATION_SERVICE_URI:http://localhost:8089}
@@ -106,11 +24,12 @@ jwt:
 security:
   public-paths:
     - /auth/**
-    - /swagger-ui/**
-    - /swagger-ui.html
-    - /v3/api-docs/**
     - /actuator/health
     - /actuator/info
+
+# Orígenes permitidos para CORS (frontend). Coma-separado, env-overridable.
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
 management:
   endpoints:

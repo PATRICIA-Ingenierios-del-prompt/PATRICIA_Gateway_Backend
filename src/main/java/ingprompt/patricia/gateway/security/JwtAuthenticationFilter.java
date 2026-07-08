@@ -2,12 +2,9 @@ package ingprompt.patricia.gateway.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ingprompt.patricia.gateway.config.GatewaySecurityProperties;
-import ingprompt.patricia.gateway.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -25,45 +22,15 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.SecretKey;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Filtro global de autenticación del Gateway.
- *
- * Valida localmente (misma firma HS256 y {@code JWT_SECRET} que el Auth
- * Backend) el token de TODA petición que no esté en la lista de rutas
- * públicas. El token puede venir por el header {@code Authorization: Bearer
- * <token>} (caso normal) o, para conexiones WebSocket que el navegador no
- * permite personalizar con headers, por el query param {@code access_token}
- * (ver {@link #isWebSocketUpgrade}).
- *
- * Si el token es válido, el Gateway inyecta la identidad del usuario en
- * headers internos ({@code X-User-Id}, {@code X-User-Email}, {@code
- * X-User-Roles}) antes de rutear al microservicio correspondiente. Los
- * microservicios internos NO necesitan validar el JWT de nuevo: confían en
- * estos headers porque solo el Gateway puede alcanzarlos (red interna).
- *
- * Por eso mismo, los microservicios downstream deben:
- *   1) No estar expuestos directamente fuera de la red interna.
- *   2) Ignorar/sobrescribir cualquier X-User-* que venga del cliente final,
- *      quedándose solo con el que puso el Gateway (aquí ya se limpia el
- *      header entrante antes de fijar el propio, ver {@link #mutateWithIdentity}).
- *
- * Nota de seguridad sobre WebSockets: el token vía query param puede quedar
- * expuesto en logs de acceso o en el historial del navegador. Por eso, una
- * vez leído, se elimina del query string antes de reenviar la petición al
- * microservicio (ver {@link #stripAccessToken}), y se recomienda usar
- * siempre {@code wss://} (TLS) en producción con tokens de vida corta.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
-
     private static final String AUTH_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String WS_TOKEN_PARAM = "access_token";
@@ -72,7 +39,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final String HEADER_USER_EMAIL = "X-User-Email";
     private static final String HEADER_USER_ROLES = "X-User-Roles";
 
-    private final JwtProperties jwtProperties;
+    private final JwtService jwtService;
     private final GatewaySecurityProperties securityProperties;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -100,12 +67,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .clockSkewSeconds(0)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            Claims claims = jwtService.validateAndExtract(token);
 
             if (claims.getSubject() == null) {
                 return unauthorized(exchange, "invalid_token", "Token sin claim 'sub'");
@@ -210,10 +172,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         DataBuffer buffer = response.bufferFactory().wrap(bytes);
         log.debug("401 on {}: {}", exchange.getRequest().getPath().value(), message);
         return response.writeWith(Mono.just(buffer));
-    }
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
