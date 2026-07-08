@@ -30,8 +30,51 @@ jobs:
       # Compiles, runs the unit + context tests and packages the jar.
       # The Spring context test reads jwt.secret / gateway.services.* from
       # src/test/resources/application.yml — no external services needed.
+      # Enforces coverage generation for SonarCloud (-Pcoverage).
       - name: Build & test
-        run: mvn -B clean verify
+        run: mvn -B clean verify -Pcoverage
+
+      # -------------------------------------------------------------------------
+      # SonarCloud quality gate. Enable once the SonarCloud project + secrets
+      # are configured. A failing quality gate blocks the PR into develop.
+      # -------------------------------------------------------------------------
+      - name: Sonar analysis (branch)
+        if: github.event_name == 'push'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
+        run: |
+          mvn --batch-mode sonar:sonar \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY_BACKEND }} \
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN_BACKEND }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/target/site/jacoco/jacoco.xml \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.sources=src/main/java \
+            -Dsonar.tests=src/test/java \
+            -Dsonar.exclusions="**/GatewayApplication.java" \
+            -Dsonar.coverage.exclusions="**/GatewayApplication.java,**/dto/**,**/*Entity.java,**/*Mapper.java,**/config/**"
+
+      - name: Sonar analysis (pull request)
+        if: github.event_name == 'pull_request'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn --batch-mode sonar:sonar \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY_BACKEND }} \
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN_BACKEND }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/target/site/jacoco/jacoco.xml \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.sources=src/main/java \
+            -Dsonar.tests=src/test/java \
+            -Dsonar.exclusions="**/GatewayApplication.java" \
+            -Dsonar.coverage.exclusions="**/GatewayApplication.java,**/dto/**,**/*Entity.java,**/*Mapper.java,**/config/**" \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
 
       # Verify the production image still builds (multi-stage Dockerfile).
       - name: Docker build
