@@ -6,6 +6,7 @@ jwt:
 gateway:
   services:
     auth: http://localhost:8081
+    users: http://localhost:8082
     parches: http://localhost:8083
     events: http://localhost:8087
     location: http://localhost:8089
@@ -16,22 +17,8 @@ gateway:
 security:
   public-paths:
     - /auth/**
-    - /swagger-ui/**
-    - /swagger-ui.html
-    - /v3/api-docs/**
     - /actuator/health
+    - /actuator/info
 
-spring:
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            - id: auth-service
-              uri: http://localhost:8081
-              predicates:
-                - Path=/auth/**
-            - id: user-service
-              uri: http://localhost:8082
-              predicates:
-                - Path=/api/v1/usuarios/**,/api/v1/intereses/**
+cors:
+  allowed-origins: http://localhost:3000

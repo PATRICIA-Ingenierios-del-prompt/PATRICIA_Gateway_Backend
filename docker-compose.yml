@@ -14,12 +14,16 @@ services:
       # host.docker.internal lets this container reach them. Point these at real
       # hostnames (compose service names / K8s Service DNS) in other environments.
       AUTH_SERVICE_URI: ${AUTH_SERVICE_URI:-http://host.docker.internal:8081}
+      USERS_SERVICE_URI: ${USERS_SERVICE_URI:-http://host.docker.internal:8082}
       PARCHES_SERVICE_URI: ${PARCHES_SERVICE_URI:-http://host.docker.internal:8083}
       EVENTS_SERVICE_URI: ${EVENTS_SERVICE_URI:-http://host.docker.internal:8087}
       LOCATION_SERVICE_URI: ${LOCATION_SERVICE_URI:-http://host.docker.internal:8089}
       NOTIFICATION_SERVICE_URI: ${NOTIFICATION_SERVICE_URI:-http://host.docker.internal:8091}
       LOCATION_WS_URI: ${LOCATION_WS_URI:-ws://host.docker.internal:8089}
       NOTIFICATION_WS_URI: ${NOTIFICATION_WS_URI:-ws://host.docker.internal:8091}
+
+      # Orígenes del frontend permitidos por CORS (coma-separado).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     # Makes host.docker.internal resolvable on Linux (already works on Docker Desktop).
     extra_hosts:
       - "host.docker.internal:host-gateway"

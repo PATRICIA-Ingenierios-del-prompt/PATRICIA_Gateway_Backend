@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # Compiles, runs the unit + context tests and packages the jar.
+      # The Spring context test reads jwt.secret / gateway.services.* from
+      # src/test/resources/application.yml — no external services needed.
+      - name: Build & test
+        run: mvn -B clean verify
+
+      # Verify the production image still builds (multi-stage Dockerfile).
+      - name: Docker build
+        run: docker build -t patricia/gateway:ci .

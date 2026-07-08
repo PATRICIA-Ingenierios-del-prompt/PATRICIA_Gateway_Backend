@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "gateway.services")
 public class ServiceUris {
     private String auth;
+    private String users;
     private String parches;
     private String events;
     private String location;

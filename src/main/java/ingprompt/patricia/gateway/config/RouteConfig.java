@@ -15,6 +15,7 @@ public class RouteConfig {
                 .route("auth", r -> r.path("/auth/**").uri(uris.getAuth()))
 
                 // --- REST microservices ---
+                .route("users", r -> r.path("/api/v1/usuarios/**", "/api/v1/intereses/**").uri(uris.getUsers()))
                 .route("parches", r -> r.path("/api/parches/**", "/api/invites/**").uri(uris.getParches()))
                 .route("events", r -> r.path("/api/events/**").uri(uris.getEvents()))
                 .route("location", r -> r.path("/api/locations/**").uri(uris.getLocation()))

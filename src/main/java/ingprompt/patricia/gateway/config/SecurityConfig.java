@@ -1,21 +1,19 @@
 package ingprompt.patricia.gateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
-/**
- * La autenticación real la hace {@link ingprompt.patricia.gateway.security.JwtAuthenticationFilter}
- * como GlobalFilter de Spring Cloud Gateway (ver su Javadoc para el porqué).
- *
- * Esta clase solo desactiva los mecanismos por defecto de Spring Security
- * (login form, basic auth, csrf, logout) y deja pasar todo a través de la cadena
- * de Security, ya que el filtro JWT se ejecuta antes, a nivel de Gateway,
- * y corta la petición con 401 si no está autorizada.
- */
+import java.util.List;
+
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
@@ -30,5 +28,21 @@ public class SecurityConfig {
                 // Authorization is delegated to JwtAuthenticationFilter (runs ahead of routing).
                 .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
                 .build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${cors.allowed-origins:http://localhost:3000}") List<String> allowedOrigins) {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, HttpHeaders.ACCEPT));
+        // Los tokens viajan en el header Authorization, no en cookies.
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
