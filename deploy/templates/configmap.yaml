@@ -1,0 +1,18 @@
+# Non-secret configuration. The only secret Gateway needs (JWT_SECRET) comes
+# from the gateway-secrets Secret synced by the ExternalSecret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: patricia-app
+data:
+  SERVER_PORT: {{ .Values.config.serverPort | quote }}
+  AUTH_SERVICE_URI: {{ .Values.config.authServiceUri | quote }}
+  USERS_SERVICE_URI: {{ .Values.config.usersServiceUri | quote }}
+  PARCHES_SERVICE_URI: {{ .Values.config.parchesServiceUri | quote }}
+  EVENTS_SERVICE_URI: {{ .Values.config.eventsServiceUri | quote }}
+  LOCATION_SERVICE_URI: {{ .Values.config.locationServiceUri | quote }}
+  NOTIFICATION_SERVICE_URI: {{ .Values.config.notificationServiceUri | quote }}
+  LOCATION_WS_URI: {{ .Values.config.locationWsUri | quote }}
+  NOTIFICATION_WS_URI: {{ .Values.config.notificationWsUri | quote }}
+  CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}

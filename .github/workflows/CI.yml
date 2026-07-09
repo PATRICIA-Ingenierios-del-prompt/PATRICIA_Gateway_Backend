@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [develop, main]
 
+
 permissions:
   contents: read
   pull-requests: read
+
+env:
+  IMAGE_NAME: patricia-gateway
 
 jobs:
   build-and-test:
@@ -76,6 +80,102 @@ jobs:
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
             -Dsonar.pullrequest.base=${{ github.base_ref }}
 
-      # Verify the production image still builds (multi-stage Dockerfile).
-      - name: Docker build
-        run: docker build -t patricia/gateway:ci .
+      # On PRs we only verify the Dockerfile still builds; the real image is
+      # built and pushed by the push-image job on develop/main.
+      - name: Build Docker image (verify Dockerfile works)
+        if: github.event_name == 'pull_request'
+        run: docker build -t ${{ env.IMAGE_NAME }}:ci .
+
+  # ---------------------------------------------------------------------------
+  # CI (§1.2): push the image to ECR on every push to develop/main.
+  # Credentials come from GitHub OIDC -> AWS role; no static keys anywhere.
+  # ---------------------------------------------------------------------------
+  push-image:
+    needs: build-and-test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC token for configure-aws-credentials
+      contents: read
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_CD_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region ${{ vars.AWS_REGION }} \
+            | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}
+
+      - name: Compute image tag (short SHA)
+        id: meta
+        run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        run: |
+          IMAGE=${{ vars.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}
+          docker build -t $IMAGE:${{ steps.meta.outputs.tag }} .
+          docker push $IMAGE:${{ steps.meta.outputs.tag }}
+          # Movable branch alias (develop/main) for humans; deploys always pin the SHA tag.
+          docker tag $IMAGE:${{ steps.meta.outputs.tag }} $IMAGE:${GITHUB_REF_NAME}
+          docker push $IMAGE:${GITHUB_REF_NAME}
+
+  # ---------------------------------------------------------------------------
+  # CD (§1.3): deploy to EKS on push to main ONLY.
+  # `helm upgrade --wait` + readiness probes gate the rollout: if the new pods
+  # never go ready, this job FAILS and the old ReplicaSet keeps serving.
+  # Because rollingUpdate.maxUnavailable is 0 (see deploy/templates/deployment.yaml),
+  # the old pods — and their open WS tunnels — stay up until the new ones pass
+  # readiness, so this is safe to run without draining active tunnels first.
+  # Manual rollback: helm rollback gateway -n patricia-app
+  # ---------------------------------------------------------------------------
+  deploy:
+    needs: push-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_CD_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set up kubeconfig
+        run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+
+      - name: Deploy (helm upgrade, gated by --wait)
+        run: |
+          helm upgrade gateway ./deploy \
+            --install \
+            --namespace patricia-app \
+            --set image.repository=${{ vars.ECR_REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ needs.push-image.outputs.image_tag }} \
+            --wait --timeout 5m
+
+      # Catches "ready but broken": the public health endpoint must answer
+      # through ALB -> Gateway directly (Gateway IS the front door, so there's
+      # no extra hop the way Auth's smoke check goes through it).
+      - name: Smoke check
+        run: |
+          for i in $(seq 1 10); do
+            curl -sf "${{ vars.API_BASE_URL }}/actuator/health" && exit 0
+            sleep 6
+          done
+          echo "Smoke check failed: ${{ vars.API_BASE_URL }}/actuator/health never answered 2xx"
+          exit 1

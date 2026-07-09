@@ -1,0 +1,12 @@
+# Auth doesn't need this (stateless REST, freely interruptible). Gateway does:
+# it holds the location-ws / notification-ws tunnels, so a voluntary
+# disruption (node drain, cluster upgrade) must never evict every pod at once.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gateway
+  namespace: patricia-app
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels: { app: gateway }

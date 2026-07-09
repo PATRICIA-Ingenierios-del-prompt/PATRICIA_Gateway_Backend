@@ -1,0 +1,13 @@
+# Name `gateway` — fronted by the cluster's ALB/Ingress at the API base URL.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: patricia-app
+  labels: { app: gateway }
+spec:
+  type: ClusterIP
+  selector: { app: gateway }
+  ports:
+    - port: 8080
+      targetPort: 8080
