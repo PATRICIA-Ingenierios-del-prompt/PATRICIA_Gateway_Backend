@@ -1,0 +1,57 @@
+# Defaults for the Gateway MS chart. The CD job overrides image.repository and
+# image.tag per deploy (pinned to the commit SHA); everything else is edited
+# here and versioned with the code it configures.
+
+image:
+  repository: ""            # set by CD: <account>.dkr.ecr.<region>.amazonaws.com/patricia-gateway
+  tag: ""                   # set by CD: short commit SHA
+  pullPolicy: IfNotPresent
+
+# The Gateway is the single ingress point and holds long-lived WebSocket
+# tunnels (location-ws, notification-ws). 2 replicas so a node drain or pod
+# eviction never drops every open tunnel at once (see pdb below too).
+replicaCount: 2
+
+serviceAccount:
+  # IRSA role for the gateway service: terraform output service_irsa_role_arns
+  roleArn: "" # TODO: arn:aws:iam::<account>:role/patricia-<env>-gateway-irsa
+
+config:
+  serverPort: "8080"
+  # K8s service DNS of every downstream MS (same namespace) — one entry per
+  # gateway.services.* key in application.yml.
+  authServiceUri: "http://auth.patricia-app.svc.cluster.local:8081"
+  usersServiceUri: "http://users.patricia-app.svc.cluster.local:8082"
+  parchesServiceUri: "http://parches.patricia-app.svc.cluster.local:8083"
+  eventsServiceUri: "http://events.patricia-app.svc.cluster.local:8087"
+  locationServiceUri: "http://location.patricia-app.svc.cluster.local:8089"
+  notificationServiceUri: "http://notification.patricia-app.svc.cluster.local:8091"
+  # Same host:port as their REST counterparts, ws:// scheme for the upgrade.
+  locationWsUri: "ws://location.patricia-app.svc.cluster.local:8089"
+  notificationWsUri: "ws://notification.patricia-app.svc.cluster.local:8091"
+  corsAllowedOrigins: "https://app.patricia.example"   # TODO: real frontend origin
+
+# External Secrets Operator: remote keys in AWS Secrets Manager
+# (created by Ulink_Infra module.secrets; prefix = ${project_name}-${environment}).
+externalSecrets:
+  clusterSecretStore: patricia-aws-secrets-manager
+  prefix: "patricia-dev"    # TODO: match ${project_name}-${environment}
+  # NOTE: Gateway only *validates* JWTs (it never mints them), so it reads the
+  # SAME shared ${prefix}/jwt-secret entry Auth signs with — no gateway-only
+  # secret needed today. If that changes, add an entry here the same way
+  # Auth's chart adds AZURE_CLIENT_ID / AZURE_CLIENT_SECRET / INTERNAL_API_KEY.
+
+resources:
+  requests: { cpu: 250m, memory: 512Mi }
+  limits:   { cpu: "1",  memory: 1Gi }
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+# Voluntary-disruption budget (node drains, cluster upgrades, `kubectl drain`).
+# Does NOT cover involuntary disruptions (node crash) — only protects against
+# an admin-initiated drain evicting every WS-holding pod simultaneously.
+pdb:
+  minAvailable: 1
