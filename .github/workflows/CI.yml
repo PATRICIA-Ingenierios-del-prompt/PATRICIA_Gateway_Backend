@@ -126,9 +126,6 @@ jobs:
           IMAGE=${{ vars.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}
           docker build -t $IMAGE:${{ steps.meta.outputs.tag }} .
           docker push $IMAGE:${{ steps.meta.outputs.tag }}
-          # Movable branch alias (develop/main) for humans; deploys always pin the SHA tag.
-          docker tag $IMAGE:${{ steps.meta.outputs.tag }} $IMAGE:${GITHUB_REF_NAME}
-          docker push $IMAGE:${GITHUB_REF_NAME}
 
   # ---------------------------------------------------------------------------
   # CD (§1.3): deploy to EKS on push to main ONLY.
