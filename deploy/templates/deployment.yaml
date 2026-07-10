@@ -19,7 +19,7 @@ spec:
     matchLabels: { app: gateway }
   template:
     metadata:
-      labels: { app: gateway }
+      labels: { app: gateway, patricia.io/sg-tier: standard }
     spec:
       serviceAccountName: gateway
       containers:
