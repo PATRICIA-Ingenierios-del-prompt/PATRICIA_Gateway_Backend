@@ -31,12 +31,15 @@ spec:
           envFrom:
             - configMapRef: { name: gateway-config }
             - secretRef:    { name: gateway-secrets }
+          # /actuator/health (exacto) es la unica ruta actuator en security.public-paths,
+          # asi que el filtro JWT la deja pasar sin token. Las subrutas /readiness y
+          # /liveness NO estan exentas -> darian 401 y el pod nunca quedaria Ready.
           readinessProbe:
-            httpGet: { path: /actuator/health/readiness, port: 8080 }
+            httpGet: { path: /actuator/health, port: 8080 }
             initialDelaySeconds: 20
             periodSeconds: 10
           livenessProbe:
-            httpGet: { path: /actuator/health/liveness, port: 8080 }
+            httpGet: { path: /actuator/health, port: 8080 }
             initialDelaySeconds: 40
             periodSeconds: 15
           resources:

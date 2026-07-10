@@ -12,7 +12,9 @@ permissions:
   pull-requests: read
 
 env:
-  IMAGE_NAME: patricia-gateway
+  # Debe coincidir con el path del repo ECR: <registry>/patricia-dev/gateway
+  # (los repos ECR se llaman "${project}-${env}/${service}" = "patricia-dev/gateway").
+  IMAGE_NAME: patricia-dev/gateway
 
 jobs:
   build-and-test:
@@ -171,11 +173,23 @@ jobs:
       # Catches "ready but broken": the public health endpoint must answer
       # through ALB -> Gateway directly (Gateway IS the front door, so there's
       # no extra hop the way Auth's smoke check goes through it).
+      # If API_BASE_URL is set (ingress wired): check the public path.
+      # If not (e.g. the first deploy, before the ingress exists): check the
+      # gateway Service in-cluster so CD still passes.
       - name: Smoke check
         run: |
-          for i in $(seq 1 10); do
-            curl -sf "${{ vars.API_BASE_URL }}/actuator/health" && exit 0
-            sleep 6
-          done
-          echo "Smoke check failed: ${{ vars.API_BASE_URL }}/actuator/health never answered 2xx"
-          exit 1
+          if [ -n "${{ vars.API_BASE_URL }}" ]; then
+            echo "Public smoke check via ${{ vars.API_BASE_URL }}"
+            for i in $(seq 1 10); do
+              curl -sf "${{ vars.API_BASE_URL }}/actuator/health" && exit 0
+              sleep 6
+            done
+            echo "Smoke check failed: ${{ vars.API_BASE_URL }}/actuator/health never answered 2xx"
+            exit 1
+          else
+            echo "API_BASE_URL not set — in-cluster smoke check via the gateway Service"
+            kubectl run smoke-gw-$GITHUB_RUN_ID --namespace patricia-app \
+              --image=curlimages/curl:8.8.0 --restart=Never --rm -i --quiet \
+              --command -- curl -sf --retry 10 --retry-delay 6 --retry-all-errors \
+              http://gateway.patricia-app.svc.cluster.local:8080/actuator/health
+          fi
