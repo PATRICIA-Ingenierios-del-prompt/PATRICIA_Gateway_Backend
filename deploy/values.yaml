@@ -29,7 +29,7 @@ config:
   # Same host:port as their REST counterparts, ws:// scheme for the upgrade.
   locationWsUri: "ws://location.patricia-app.svc.cluster.local:8089"
   notificationWsUri: "ws://notification.patricia-app.svc.cluster.local:8091"
-  corsAllowedOrigins: "https://app.patricia.example"   # TODO: real frontend origin
+  corsAllowedOrigins: "https://d2o13kfv3bj832.cloudfront.net"  # TODO: real frontend origin
 
 # External Secrets Operator: remote keys in AWS Secrets Manager
 # (created by Ulink_Infra module.secrets; prefix = ${project_name}-${environment}).
