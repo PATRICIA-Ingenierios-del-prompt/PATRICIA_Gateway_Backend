@@ -19,6 +19,11 @@ gateway:
     board-ws: ${BOARD_WS_URI:http://localhost:8086}
     parques: ${PARQUES_SERVICE_URI:http://localhost:8085}
     parques-ws: ${PARQUES_WS_URI:http://localhost:8085}
+    # NOTA: en K8s cada MS tiene su propio Service DNS, así que compartir el
+    # número de puerto 8086 con `board` no es un problema ahí. Pero en local
+    # (docker-compose / correr ambos a mano) no levantes Board y Matching al
+    # mismo tiempo con estos defaults, o uno pisará al otro en localhost:8086.
+    matching: ${MATCHING_SERVICE_URI:http://localhost:8086}
 
 # Mismo secreto (HS256) que jwt.secret en el Auth Backend.
 jwt:
