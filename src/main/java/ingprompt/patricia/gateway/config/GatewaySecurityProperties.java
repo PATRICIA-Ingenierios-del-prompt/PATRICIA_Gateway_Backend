@@ -12,9 +12,9 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties(prefix = "security")
 public class GatewaySecurityProperties {
-    private List<String> publicPaths = List.of(
+    private List<String> publicPaths = new java.util.ArrayList<>(List.of(
             "/auth/**",
             "/actuator/health",
             "/actuator/info"
-    );
+    ));
 }
