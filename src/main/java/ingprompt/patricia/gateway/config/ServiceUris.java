@@ -17,8 +17,10 @@ public class ServiceUris {
     private String location;
     private String notification;
     private String board;
+    private String parques;
 
     private String locationWs;
     private String notificationWs;
     private String boardWs;
+    private String parquesWs;
 }

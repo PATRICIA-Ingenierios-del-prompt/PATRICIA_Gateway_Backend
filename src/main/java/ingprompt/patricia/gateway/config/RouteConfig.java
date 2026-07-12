@@ -21,11 +21,13 @@ public class RouteConfig {
                 .route("location", r -> r.path("/api/locations/**").uri(uris.getLocation()))
                 .route("notifications", r -> r.path("/api/notifications/**").uri(uris.getNotification()))
                 .route("board", r -> r.path("/api/boards/**").uri(uris.getBoard()))
+                .route("parques", r -> r.path("/api/games/**").uri(uris.getParques()))
 
                 // --- STOMP WebSocket tunnels (upgrade handshake carries the JWT) ---
                 .route("location-ws", r -> r.path("/ws/geo/**").uri(uris.getLocationWs()))
                 .route("notifications-ws", r -> r.path("/ws/notifications/**").uri(uris.getNotificationWs()))
                 .route("board-ws", r -> r.path("/ws/board/**").uri(uris.getBoardWs()))
+                .route("parques-ws", r -> r.path("/parques-ws/**").uri(uris.getParquesWs()))
 
                 .build();
     }

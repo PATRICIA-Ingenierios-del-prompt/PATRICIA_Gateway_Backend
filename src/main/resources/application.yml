@@ -17,6 +17,8 @@ gateway:
     notification-ws: ${NOTIFICATION_WS_URI:ws://localhost:8091}
     board: ${BOARD_SERVICE_URI:http://localhost:8086}
     board-ws: ${BOARD_WS_URI:http://localhost:8086}
+    parques: ${PARQUES_SERVICE_URI:http://localhost:8085}
+    parques-ws: ${PARQUES_WS_URI:http://localhost:8085}
 
 # Mismo secreto (HS256) que jwt.secret en el Auth Backend.
 jwt:
@@ -28,6 +30,8 @@ security:
     - /auth/**
     - /actuator/health
     - /actuator/info
+    - /api/games/**
+    - /parques-ws/**
 
 # Orígenes permitidos para CORS (frontend). Coma-separado, env-overridable.
 cors:
