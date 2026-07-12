@@ -16,7 +16,9 @@ public class ServiceUris {
     private String events;
     private String location;
     private String notification;
+    private String board;
 
     private String locationWs;
     private String notificationWs;
+    private String boardWs;
 }

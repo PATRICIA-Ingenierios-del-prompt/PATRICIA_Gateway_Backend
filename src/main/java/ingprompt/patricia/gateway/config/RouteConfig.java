@@ -20,10 +20,12 @@ public class RouteConfig {
                 .route("events", r -> r.path("/api/events/**").uri(uris.getEvents()))
                 .route("location", r -> r.path("/api/locations/**").uri(uris.getLocation()))
                 .route("notifications", r -> r.path("/api/notifications/**").uri(uris.getNotification()))
+                .route("board", r -> r.path("/api/boards/**").uri(uris.getBoard()))
 
                 // --- STOMP WebSocket tunnels (upgrade handshake carries the JWT) ---
                 .route("location-ws", r -> r.path("/ws/geo/**").uri(uris.getLocationWs()))
                 .route("notifications-ws", r -> r.path("/ws/notifications/**").uri(uris.getNotificationWs()))
+                .route("board-ws", r -> r.path("/ws/board/**").uri(uris.getBoardWs()))
 
                 .build();
     }
