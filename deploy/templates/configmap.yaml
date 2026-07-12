@@ -13,6 +13,7 @@ data:
   EVENTS_SERVICE_URI: {{ .Values.config.eventsServiceUri | quote }}
   LOCATION_SERVICE_URI: {{ .Values.config.locationServiceUri | quote }}
   NOTIFICATION_SERVICE_URI: {{ .Values.config.notificationServiceUri | quote }}
+  MATCHING_SERVICE_URI: {{ .Values.config.matchingServiceUri | quote }}
   LOCATION_WS_URI: {{ .Values.config.locationWsUri | quote }}
   NOTIFICATION_WS_URI: {{ .Values.config.notificationWsUri | quote }}
   CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}

@@ -17,6 +17,7 @@ gateway:
     board-ws: http://localhost:8086
     parques: http://localhost:8085
     parques-ws: http://localhost:8085
+    matching: http://localhost:8086
 
 security:
   public-paths:

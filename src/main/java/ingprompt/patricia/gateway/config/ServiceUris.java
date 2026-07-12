@@ -18,6 +18,7 @@ public class ServiceUris {
     private String notification;
     private String board;
     private String parques;
+    private String matching;
 
     private String locationWs;
     private String notificationWs;
