@@ -13,6 +13,8 @@ gateway:
     notification: http://localhost:8091
     location-ws: ws://localhost:8089
     notification-ws: ws://localhost:8091
+    board: http://localhost:8086
+    board-ws: http://localhost:8086
 
 security:
   public-paths:
