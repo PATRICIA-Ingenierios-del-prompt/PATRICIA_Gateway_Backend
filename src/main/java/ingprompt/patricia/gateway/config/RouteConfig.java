@@ -22,6 +22,9 @@ public class RouteConfig {
                 .route("notifications", r -> r.path("/api/notifications/**").uri(uris.getNotification()))
                 .route("board", r -> r.path("/api/boards/**").uri(uris.getBoard()))
                 .route("parques", r -> r.path("/api/games/**").uri(uris.getParques()))
+                // JWT propio validado por Matching (MatchingController + su
+                // JwtAuthenticationFilter interno); el Gateway solo enruta.
+                .route("matching", r -> r.path("/matching/**").uri(uris.getMatching()))
 
                 // --- STOMP WebSocket tunnels (upgrade handshake carries the JWT) ---
                 .route("location-ws", r -> r.path("/ws/geo/**").uri(uris.getLocationWs()))

@@ -26,6 +26,7 @@ config:
   eventsServiceUri: "http://events.patricia-app.svc.cluster.local:8087"
   locationServiceUri: "http://location.patricia-app.svc.cluster.local:8089"
   notificationServiceUri: "http://notification.patricia-app.svc.cluster.local:8091"
+  matchingServiceUri: "http://matching.patricia-app.svc.cluster.local:8086"
   # Same host:port as their REST counterparts, ws:// scheme for the upgrade.
   locationWsUri: "ws://location.patricia-app.svc.cluster.local:8089"
   notificationWsUri: "ws://notification.patricia-app.svc.cluster.local:8091"
