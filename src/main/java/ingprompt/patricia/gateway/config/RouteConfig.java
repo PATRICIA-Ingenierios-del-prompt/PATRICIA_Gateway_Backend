@@ -25,12 +25,16 @@ public class RouteConfig {
                 // JWT propio validado por Matching (MatchingController + su
                 // JwtAuthenticationFilter interno); el Gateway solo enruta.
                 .route("matching", r -> r.path("/matching/**").uri(uris.getMatching()))
+                .route("communication", r -> r.path("/api/chat/**", "/api/voice/**").uri(uris.getCommunication()))
 
                 // --- STOMP WebSocket tunnels (upgrade handshake carries the JWT) ---
                 .route("location-ws", r -> r.path("/ws/geo/**").uri(uris.getLocationWs()))
                 .route("notifications-ws", r -> r.path("/ws/notifications/**").uri(uris.getNotificationWs()))
                 .route("board-ws", r -> r.path("/ws/board/**").uri(uris.getBoardWs()))
                 .route("parques-ws", r -> r.path("/parques-ws/**").uri(uris.getParquesWs()))
+                // Chat/voice STOMP (native WS): the JWT rides ?access_token= on the
+                // upgrade, same mechanism as /ws/geo (JwtAuthenticationFilter).
+                .route("communication-ws", r -> r.path("/ws-stomp/**").uri(uris.getCommunicationWs()))
 
                 .build();
     }

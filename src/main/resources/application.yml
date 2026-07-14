@@ -24,6 +24,8 @@ gateway:
     # (docker-compose / correr ambos a mano) no levantes Board y Matching al
     # mismo tiempo con estos defaults, o uno pisará al otro en localhost:8086.
     matching: ${MATCHING_SERVICE_URI:http://localhost:8086}
+    communication: ${COMMUNICATION_SERVICE_URI:http://localhost:8084}
+    communication-ws: ${COMMUNICATION_WS_URI:ws://localhost:8084}
 
 # Mismo secreto (HS256) que jwt.secret en el Auth Backend.
 jwt:
@@ -37,6 +39,11 @@ security:
     - /actuator/info
     - /api/games/**
     - /parques-ws/**
+    # SockJS: el handshake empieza con un GET /info sin header Authorization ni
+    # posibilidad de query token (el filtro solo acepta access_token en upgrades),
+    # asi que el board WS pasa como publico igual que parques-ws. El MS de board
+    # es quien limita que se puede hacer dentro de la sesion.
+    - /ws/board/**
 
 # Orígenes permitidos para CORS (frontend). Coma-separado, env-overridable.
 cors:
