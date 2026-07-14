@@ -19,9 +19,11 @@ public class ServiceUris {
     private String board;
     private String parques;
     private String matching;
+    private String communication;
 
     private String locationWs;
     private String notificationWs;
     private String boardWs;
     private String parquesWs;
+    private String communicationWs;
 }

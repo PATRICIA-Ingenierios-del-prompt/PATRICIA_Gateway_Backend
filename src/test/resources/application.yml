@@ -18,6 +18,8 @@ gateway:
     parques: http://localhost:8085
     parques-ws: http://localhost:8085
     matching: http://localhost:8086
+    communication: http://localhost:8084
+    communication-ws: ws://localhost:8084
 
 security:
   public-paths:

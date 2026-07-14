@@ -14,6 +14,12 @@ data:
   LOCATION_SERVICE_URI: {{ .Values.config.locationServiceUri | quote }}
   NOTIFICATION_SERVICE_URI: {{ .Values.config.notificationServiceUri | quote }}
   MATCHING_SERVICE_URI: {{ .Values.config.matchingServiceUri | quote }}
+  BOARD_SERVICE_URI: {{ .Values.config.boardServiceUri | quote }}
+  PARQUES_SERVICE_URI: {{ .Values.config.parquesServiceUri | quote }}
+  COMMUNICATION_SERVICE_URI: {{ .Values.config.communicationServiceUri | quote }}
   LOCATION_WS_URI: {{ .Values.config.locationWsUri | quote }}
   NOTIFICATION_WS_URI: {{ .Values.config.notificationWsUri | quote }}
+  BOARD_WS_URI: {{ .Values.config.boardWsUri | quote }}
+  PARQUES_WS_URI: {{ .Values.config.parquesWsUri | quote }}
+  COMMUNICATION_WS_URI: {{ .Values.config.communicationWsUri | quote }}
   CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}

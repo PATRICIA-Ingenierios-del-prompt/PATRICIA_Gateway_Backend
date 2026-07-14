@@ -27,9 +27,15 @@ config:
   locationServiceUri: "http://location.patricia-app.svc.cluster.local:8089"
   notificationServiceUri: "http://notification.patricia-app.svc.cluster.local:8091"
   matchingServiceUri: "http://matching.patricia-app.svc.cluster.local:8086"
+  boardServiceUri: "http://board.patricia-app.svc.cluster.local:8086"
+  parquesServiceUri: "http://parques.patricia-app.svc.cluster.local:8085"
+  communicationServiceUri: "http://communication.patricia-app.svc.cluster.local:8084"
   # Same host:port as their REST counterparts, ws:// scheme for the upgrade.
   locationWsUri: "ws://location.patricia-app.svc.cluster.local:8089"
   notificationWsUri: "ws://notification.patricia-app.svc.cluster.local:8091"
+  boardWsUri: "ws://board.patricia-app.svc.cluster.local:8086"
+  parquesWsUri: "ws://parques.patricia-app.svc.cluster.local:8085"
+  communicationWsUri: "ws://communication.patricia-app.svc.cluster.local:8084"
   corsAllowedOrigins: "https://d2o13kfv3bj832.cloudfront.net"  # TODO: real frontend origin
 
 # External Secrets Operator: remote keys in AWS Secrets Manager
