@@ -14,7 +14,7 @@ replicaCount: 2
 
 serviceAccount:
   # IRSA role for the gateway service: terraform output service_irsa_role_arns
-  roleArn: "" # TODO: arn:aws:iam::<account>:role/patricia-<env>-gateway-irsa
+  roleArn: "arn:aws:iam::188701360691:role/patricia-dev-gateway-irsa"
 
 config:
   serverPort: "8080"
@@ -36,7 +36,7 @@ config:
   boardWsUri: "ws://board.patricia-app.svc.cluster.local:8086"
   parquesWsUri: "ws://parques.patricia-app.svc.cluster.local:8085"
   communicationWsUri: "ws://communication.patricia-app.svc.cluster.local:8084"
-  corsAllowedOrigins: "https://d2o13kfv3bj832.cloudfront.net"  # TODO: real frontend origin
+  corsAllowedOrigins: "https://www.ulinkapp.website,https://d2j23eaj60rkgu.cloudfront.net"
 
 # External Secrets Operator: remote keys in AWS Secrets Manager
 # (created by Ulink_Infra module.secrets; prefix = ${project_name}-${environment}).
