@@ -25,6 +25,10 @@ gateway:
     # mismo tiempo con estos defaults, o uno pisará al otro en localhost:8086.
     matching: ${MATCHING_SERVICE_URI:http://localhost:8086}
     communication: ${COMMUNICATION_SERVICE_URI:http://localhost:8084}
+    # Wellbeing (LLM) comparte el puerto 8086 con board/matching — misma nota
+    # de arriba: en K8s no importa (Service DNS propio), en local no los
+    # levantes a la vez.
+    wellbeing: ${WELLBEING_SERVICE_URI:http://localhost:8086}
     communication-ws: ${COMMUNICATION_WS_URI:ws://localhost:8084}
 
 # Mismo secreto (HS256) que jwt.secret en el Auth Backend.

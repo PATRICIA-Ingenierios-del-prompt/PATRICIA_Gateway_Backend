@@ -17,6 +17,7 @@ data:
   BOARD_SERVICE_URI: {{ .Values.config.boardServiceUri | quote }}
   PARQUES_SERVICE_URI: {{ .Values.config.parquesServiceUri | quote }}
   COMMUNICATION_SERVICE_URI: {{ .Values.config.communicationServiceUri | quote }}
+  WELLBEING_SERVICE_URI: {{ .Values.config.wellbeingServiceUri | quote }}
   LOCATION_WS_URI: {{ .Values.config.locationWsUri | quote }}
   NOTIFICATION_WS_URI: {{ .Values.config.notificationWsUri | quote }}
   BOARD_WS_URI: {{ .Values.config.boardWsUri | quote }}

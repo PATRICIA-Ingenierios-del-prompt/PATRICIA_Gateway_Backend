@@ -20,6 +20,7 @@ public class ServiceUris {
     private String parques;
     private String matching;
     private String communication;
+    private String wellbeing;
 
     private String locationWs;
     private String notificationWs;

@@ -30,6 +30,7 @@ config:
   boardServiceUri: "http://board.patricia-app.svc.cluster.local:8086"
   parquesServiceUri: "http://parques.patricia-app.svc.cluster.local:8085"
   communicationServiceUri: "http://communication.patricia-app.svc.cluster.local:8084"
+  wellbeingServiceUri: "http://wellbeing.patricia-app.svc.cluster.local:8086"
   # Same host:port as their REST counterparts, ws:// scheme for the upgrade.
   locationWsUri: "ws://location.patricia-app.svc.cluster.local:8089"
   notificationWsUri: "ws://notification.patricia-app.svc.cluster.local:8091"
