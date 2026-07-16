@@ -20,6 +20,7 @@ gateway:
     matching: http://localhost:8086
     communication: http://localhost:8084
     communication-ws: ws://localhost:8084
+    wellbeing: http://localhost:8086
 
 security:
   public-paths:
