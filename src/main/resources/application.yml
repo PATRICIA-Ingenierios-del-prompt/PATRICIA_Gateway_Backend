@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: gateway
+  cloud:
+    gateway:
+      metrics:
+        enabled: true
 
 gateway:
   services:
@@ -39,8 +43,10 @@ jwt:
 security:
   public-paths:
     - /auth/**
+    # Solo exponemos públicamente de manera segura los endpoints de diagnóstico indispensables
     - /actuator/health
     - /actuator/info
+    - /actuator/prometheus
     - /api/games/**
     - /parques-ws/**
     # SockJS: el handshake empieza con un GET /info sin header Authorization ni
@@ -53,12 +59,20 @@ security:
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
+# Configuración de Actuator y exportador de Prometheus para Grafana
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: patricia-gateway
