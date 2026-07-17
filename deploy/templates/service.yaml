@@ -1,13 +1,20 @@
-# Name `gateway` — fronted by the cluster's ALB/Ingress at the API base URL.
+# Name `gateway` — fronted by the cluster's ALB/Ingress at la API base URL.
 apiVersion: v1
 kind: Service
 metadata:
   name: gateway
   namespace: patricia-app
-  labels: { app: gateway }
+  labels:
+    app: gateway
+  annotations:
+    # Permite que Prometheus descubra el endpoint de métricas vía ServiceMonitor.
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/actuator/prometheus"
 spec:
   type: ClusterIP
   selector: { app: gateway }
   ports:
-    - port: 8080
+    - name: http          # <-- nombre requerido por el ServiceMonitor
+      port: 8080
       targetPort: 8080

@@ -58,6 +58,14 @@ hpa:
   maxReplicas: 6
   targetCPUUtilizationPercentage: 70
 
+# ---------------------------------------------------------------------------
+# Observabilidad — Prometheus + Grafana (kube-prometheus-stack)
+# ---------------------------------------------------------------------------
+monitoring:
+  # Nombre del Helm release con el que instalaste kube-prometheus-stack.
+  # Cambia este valor si tu release tiene otro nombre.
+  prometheusRelease: monitoring
+
 # Voluntary-disruption budget (node drains, cluster upgrades, `kubectl drain`).
 # Does NOT cover involuntary disruptions (node crash) — only protects against
 # an admin-initiated drain evicting every WS-holding pod simultaneously.

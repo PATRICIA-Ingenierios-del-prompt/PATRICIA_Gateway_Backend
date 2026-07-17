@@ -1,0 +1,13 @@
+# ConfigMap que el sidecar de Grafana (grafana-sc-dashboard) detecta
+# automáticamente y carga el dashboard sin necesidad de importarlo a mano.
+# Condición: el Grafana instalado con kube-prometheus-stack debe tener
+# sidecar.dashboards.enabled: true  y  searchNamespace: ALL
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-grafana-dashboard
+  namespace: patricia-app
+  labels:
+    grafana_dashboard: "1"
+data:
+  gateway-dashboard.json: {{ .Files.Get "dashboards/gateway-dashboard.json" | toJson }}

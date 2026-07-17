@@ -1,0 +1,400 @@
+{
+  "__inputs": [],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
+  ],
+  "annotations": { "list": [] },
+  "description": "Tablero de Observabilidad – PATRICIA Gateway (U-Link). Cubre el escenario RNF de Observabilidad: trazabilidad activa, latencia, errores, JVM y uso de rutas.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "📊 Tablero de Negocio",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background" },
+      "title": "Requests / seg (total)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"patricia-gateway\"}[1m]))",
+          "legendFormat": "req/s",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 2,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "title": "Errores 5xx activos",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"patricia-gateway\",status=~\"5..\"}[1m]))",
+          "legendFormat": "5xx/s",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 3,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "title": "Latencia p99 (1m)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[1m])))",
+          "legendFormat": "p99",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 4,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "title": "Pods activos (gateway)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(up{job=\"gateway\"})",
+          "legendFormat": "pods",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 5,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "title": "Tasa de error (5xx)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"patricia-gateway\",status=~\"5..\"}[5m])) / sum(rate(http_server_requests_seconds_count{application=\"patricia-gateway\"}[5m]))",
+          "legendFormat": "error rate",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+      "id": 10,
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Requests/seg por ruta",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{application=\"patricia-gateway\"}[1m]))",
+          "legendFormat": "{{uri}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
+      "id": 11,
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Requests por código HTTP",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by(status) (rate(http_server_requests_seconds_count{application=\"patricia-gateway\"}[1m]))",
+          "legendFormat": "HTTP {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 },
+      "id": 101,
+      "title": "⚙️ Tablero Técnico – Latencia y Rendimiento",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "id": 20,
+      "title": "Latencia de respuesta – percentiles (p50/p95/p99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[1m])))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[1m])))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[1m])))",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "id": 21,
+      "title": "Latencia p99 por microservicio (rutas Gateway)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[1m])))",
+          "legendFormat": "{{uri}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Ruta" }, "properties": [{ "id": "custom.width", "value": 300 }] },
+          { "matcher": { "id": "byName", "options": "p50 (s)" }, "properties": [{ "id": "unit", "value": "s" }] },
+          { "matcher": { "id": "byName", "options": "p99 (s)" }, "properties": [{ "id": "unit", "value": "s" }] },
+          { "matcher": { "id": "byName", "options": "Req/s" }, "properties": [{ "id": "unit", "value": "reqps" }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 22 },
+      "id": 22,
+      "title": "Tabla de Latencia por Ruta",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[5m])))",
+          "legendFormat": "{{uri}}",
+          "refId": "A",
+          "instant": true
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=\"patricia-gateway\"}[5m])))",
+          "legendFormat": "{{uri}}",
+          "refId": "B",
+          "instant": true
+        },
+        {
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{application=\"patricia-gateway\"}[5m]))",
+          "legendFormat": "{{uri}}",
+          "refId": "C",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        { "id": "merge", "options": {} },
+        { "id": "organize", "options": { "renameByName": { "uri": "Ruta", "Value #A": "p50 (s)", "Value #B": "p99 (s)", "Value #C": "Req/s" } } }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+      "id": 102,
+      "title": "🖥️ Salud de Infraestructura – JVM y Recursos",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
+      "id": 30,
+      "title": "Uso de Memoria JVM (Heap / Non-Heap)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by(area) (jvm_memory_used_bytes{application=\"patricia-gateway\"})",
+          "legendFormat": "{{area}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 31 },
+      "id": 31,
+      "title": "CPU del Proceso (JVM)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "process_cpu_usage{application=\"patricia-gateway\"}",
+          "legendFormat": "CPU",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
+      "id": 32,
+      "title": "Threads JVM (live / daemon / peak)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads{application=\"patricia-gateway\"}",
+          "legendFormat": "live",
+          "refId": "A"
+        },
+        {
+          "expr": "jvm_threads_daemon_threads{application=\"patricia-gateway\"}",
+          "legendFormat": "daemon",
+          "refId": "B"
+        },
+        {
+          "expr": "jvm_threads_peak_threads{application=\"patricia-gateway\"}",
+          "legendFormat": "peak",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 39 },
+      "id": 33,
+      "title": "GC – Pausas por segundo",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_count{application=\"patricia-gateway\"}[1m])",
+          "legendFormat": "{{action}} {{cause}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 47 },
+      "id": 103,
+      "title": "🔒 Seguridad y WebSockets",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 48 },
+      "id": 40,
+      "title": "Errores JWT (401 Unauthorized)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"patricia-gateway\",status=\"401\"}[1m]))",
+          "legendFormat": "401/s",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 48 },
+      "id": 41,
+      "title": "Errores 4xx (cliente) por ruta",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{application=\"patricia-gateway\",status=~\"4..\"}[1m]))",
+          "legendFormat": "{{uri}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 56 },
+      "id": 42,
+      "title": "Conexiones WebSocket activas (netty / reactor)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "reactor_netty_connection_provider_active_connections{application=\"patricia-gateway\"}",
+          "legendFormat": "{{remote_address}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["patricia", "gateway", "ulink", "observabilidad"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": "Prometheus",
+        "definition": "label_values(http_server_requests_seconds_count{application=\"patricia-gateway\"}, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "instance",
+        "options": [],
+        "query": "label_values(http_server_requests_seconds_count{application=\"patricia-gateway\"}, instance)",
+        "refresh": 2,
+        "sort": 1,
+        "label": "Instancia",
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PATRICIA – Gateway Observabilidad",
+  "uid": "patricia-gateway-obs",
+  "version": 1
+}

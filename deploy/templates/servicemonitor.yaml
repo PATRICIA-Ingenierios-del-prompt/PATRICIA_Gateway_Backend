@@ -1,0 +1,25 @@
+# ServiceMonitor — le dice a Prometheus Operator (kube-prometheus-stack) que
+# scrapeé /actuator/prometheus en todos los pods del gateway cada 15s.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gateway
+  namespace: patricia-app          # mismo namespace que el Service
+  labels:
+    app: gateway
+    # Este label debe coincidir con serviceMonitorSelector del stack Prometheus.
+    # El valor por defecto del kube-prometheus-stack es release: <nombre-release>.
+    # Si instalaste el stack con `helm install monitoring ...`, pon: release: monitoring
+    release: {{ .Values.monitoring.prometheusRelease }}
+spec:
+  selector:
+    matchLabels:
+      app: gateway
+  namespaceSelector:
+    matchNames:
+      - patricia-app
+  endpoints:
+    - port: http                    # nombre del puerto en el Service
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
