@@ -25,7 +25,7 @@ public class RouteConfig {
                 // JWT propio validado por Matching (MatchingController + su
                 // JwtAuthenticationFilter interno); el Gateway solo enruta.
                 .route("matching", r -> r.path("/matching/**").uri(uris.getMatching()))
-                .route("communication", r -> r.path("/api/chat/**", "/api/voice/**").uri(uris.getCommunication()))
+                .route("communication", r -> r.path("/api/chat/**", "/api/dm/**", "/api/voice/**").uri(uris.getCommunication()))
                 // Wellbeing (LLM): chatbot + diario + ejercicios. Vive bajo
                 // /api/bienestar/** para no chocar con /api/chat/** (Communication).
                 .route("wellbeing", r -> r.path("/api/bienestar/**").uri(uris.getWellbeing()))
