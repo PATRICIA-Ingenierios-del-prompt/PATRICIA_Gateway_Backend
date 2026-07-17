@@ -76,3 +76,10 @@ management:
         enabled: true
     tags:
       application: patricia-gateway
+    # Habilita histogramas para latencia p50/p95/p99 en Grafana
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      # Límites de buckets optimizados para un API Gateway (en segundos)
+      slo:
+        http.server.requests: 5ms,10ms,25ms,50ms,100ms,250ms,500ms,1s,2s,5s
