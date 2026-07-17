@@ -16,9 +16,9 @@ gateway:
     location-ws: ${LOCATION_WS_URI:ws://localhost:8089}
     notification-ws: ${NOTIFICATION_WS_URI:ws://localhost:8091}
     board: ${BOARD_SERVICE_URI:http://localhost:8086}
-    board-ws: ${BOARD_WS_URI:http://localhost:8086}
+    board-ws: ${BOARD_WS_URI:ws://localhost:8086}
     parques: ${PARQUES_SERVICE_URI:http://localhost:8085}
-    parques-ws: ${PARQUES_WS_URI:http://localhost:8085}
+    parques-ws: ${PARQUES_WS_URI:ws://localhost:8085}
     # NOTA: en K8s cada MS tiene su propio Service DNS, así que compartir el
     # número de puerto 8086 con `board` no es un problema ahí. Pero en local
     # (docker-compose / correr ambos a mano) no levantes Board y Matching al
